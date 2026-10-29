@@ -34,7 +34,7 @@ RUN <<'EOF'
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG QEMU_VER="11.1.2"
+ARG QEMU_VER="11.1.3"
 
 RUN <<'EOF'
     #!/bin/bash
@@ -126,12 +126,12 @@ ENV LC_ALL=en_US.UTF-8
 # ==========================================
 # 3. ARM & RISC-V Cross-Toolchains
 # ==========================================
-ARG ARM_GNU_TOOLCHAIN_VERSION=15.3.rel1
+ARG ARM_GNU_TOOLCHAIN_VERSION=15.3.rel2
 ENV ARM_GNU_TOOLCHAIN_VERSION=$ARM_GNU_TOOLCHAIN_VERSION
-ARG RV_GNU_TOOLCHAIN_VERSION=2026.08.27
+ARG RV_GNU_TOOLCHAIN_VERSION=2026.10.29
 ENV RV_GNU_TOOLCHAIN_VERSION=$RV_GNU_TOOLCHAIN_VERSION
 
-RUN --mount=type=bind,target=/build_context <<'EOF'
+RUN --mount=type=bind,target=/build_context,rw <<'EOF'
     set -euo pipefail
     TARGET_DIR="/opt/toolchains/aarch64-none-linux-gnu"
     TARBALL_NAME="arm-gnu-toolchain-${ARM_GNU_TOOLCHAIN_VERSION}-x86_64-aarch64-none-linux-gnu.tar.xz"
@@ -141,15 +141,14 @@ RUN --mount=type=bind,target=/build_context <<'EOF'
     #if local file exists, use it; otherwise, download from URL
     if [ -f "${LOCAL_PATH}" ]; then
         echo ">>> Using local tarball for aarch64-none-linux-gnu..."
-        tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
     else    
         echo ">>> Downloading aarch64-none-linux-gnu..."
-        wget ${WGET_ARGS} -O- "${DOWNLOAD_URL}" \
-            | tar -xJ --strip-components=1 -C "${TARGET_DIR}"
+        wget ${WGET_ARGS} -P "/build_context/" "${DOWNLOAD_URL}"
     fi
+    tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
 EOF
 
-RUN --mount=type=bind,target=/build_context <<'EOF'
+RUN --mount=type=bind,target=/build_context,rw <<'EOF'
     set -euo pipefail
     TARGET_DIR="/opt/toolchains/aarch64_be-none-linux-gnu"
     TARBALL_NAME="arm-gnu-toolchain-${ARM_GNU_TOOLCHAIN_VERSION}-x86_64-aarch64_be-none-linux-gnu.tar.xz"
@@ -158,15 +157,14 @@ RUN --mount=type=bind,target=/build_context <<'EOF'
     mkdir -p "${TARGET_DIR}"
     if [ -f "${LOCAL_PATH}" ]; then
         echo ">>> Using local tarball for aarch64_be-none-linux-gnu..."
-        tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
     else
         echo ">>> Downloading aarch64_be-none-linux-gnu..."
-        wget ${WGET_ARGS} -O- "${DOWNLOAD_URL}" \
-            | tar -xJ --strip-components=1 -C "${TARGET_DIR}"
+        wget ${WGET_ARGS} -P "/build_context/" "${DOWNLOAD_URL}"
     fi
+    tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
 EOF
 
-RUN --mount=type=bind,target=/build_context <<'EOF'
+RUN --mount=type=bind,target=/build_context,rw <<'EOF'
     set -euo pipefail
     TARGET_DIR="/opt/toolchains/arm-none-linux-gnueabihf"
     TARBALL_NAME="arm-gnu-toolchain-${ARM_GNU_TOOLCHAIN_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz"
@@ -175,15 +173,14 @@ RUN --mount=type=bind,target=/build_context <<'EOF'
     mkdir -p "${TARGET_DIR}"
     if [ -f "${LOCAL_PATH}" ]; then
         echo ">>> Using local tarball for arm-none-linux-gnueabihf..."
-        tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
     else
         echo ">>> Downloading arm-none-linux-gnueabihf..."
-        wget ${WGET_ARGS} -O- "${DOWNLOAD_URL}" \
-            | tar -xJ --strip-components=1 -C "${TARGET_DIR}"
+        wget ${WGET_ARGS} -P "/build_context/" "${DOWNLOAD_URL}"
     fi
+    tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
 EOF
 
-RUN --mount=type=bind,target=/build_context <<'EOF'
+RUN --mount=type=bind,target=/build_context,rw <<'EOF'
     set -euo pipefail
     TARGET_DIR="/opt/toolchains/riscv32-unknown-linux-gnu"
     TARBALL_NAME="riscv32-glibc-ubuntu-24.04-gcc.tar.xz"
@@ -192,15 +189,14 @@ RUN --mount=type=bind,target=/build_context <<'EOF'
     mkdir -p "${TARGET_DIR}"
     if [ -f "${LOCAL_PATH}" ]; then
         echo ">>> Using local tarball for riscv32-unknown-linux-gnu..."
-        tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
     else
         echo ">>> Downloading riscv32-unknown-linux-gnu..."
-        wget ${WGET_ARGS} -O- "${DOWNLOAD_URL}" \
-            | tar -xJ --strip-components=1 -C "${TARGET_DIR}"
+        wget ${WGET_ARGS} -P "/build_context/" "${DOWNLOAD_URL}"
     fi
+    tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
 EOF
 
-RUN --mount=type=bind,target=/build_context <<'EOF'
+RUN --mount=type=bind,target=/build_context,rw <<'EOF'
     set -euo pipefail
     TARGET_DIR="/opt/toolchains/riscv64-unknown-linux-gnu"
     TARBALL_NAME="riscv64-glibc-ubuntu-24.04-gcc.tar.xz"
@@ -209,12 +205,11 @@ RUN --mount=type=bind,target=/build_context <<'EOF'
     mkdir -p "${TARGET_DIR}"
     if [ -f "${LOCAL_PATH}" ]; then
         echo ">>> Using local tarball for riscv64-unknown-linux-gnu..."
-        tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
     else
         echo ">>> Downloading riscv64-unknown-linux-gnu..."
-        wget ${WGET_ARGS} -O- "${DOWNLOAD_URL}" \
-            | tar -xJ --strip-components=1 -C "${TARGET_DIR}"
+        wget ${WGET_ARGS} -P "/build_context/" "${DOWNLOAD_URL}"
     fi
+    tar -xJ --strip-components=1 -f "${LOCAL_PATH}" -C "${TARGET_DIR}"
 EOF
 
 # ==========================================
@@ -334,7 +329,7 @@ EOF
 WORKDIR /home/${USERNAME}
 ENV ZSH="/home/${USERNAME}/.oh-my-zsh"
 
-RUN --mount=type=bind,target=/build_context <<'EOF'
+RUN --mount=type=bind,target=/build_context,rw <<'EOF'
     #!/bin/bash
     set -euo pipefail
 
